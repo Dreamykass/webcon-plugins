@@ -23,17 +23,26 @@ namespace DiceRollForNextStep
 			if (roll == 6)
 			{
 				log("rolled a 6, going to success step");
-				MoveDocumentToNextStep(args.Context.CurrentDocument, Configuration.SuccessPathId);
+				//MoveDocumentToNextStep2(args.Context.CurrentDocument, Configuration.SuccessPathId);
+				MoveDocumentToNextStep(args.Context.CurrentWorkflowID, Configuration.SuccessPathId);
 			}
 			else
 			{
 				log("didn't roll a 6, going to fail step");
-				MoveDocumentToNextStep(args.Context.CurrentDocument, Configuration.FailPathId);
+				//MoveDocumentToNextStep2(args.Context.CurrentDocument, Configuration.FailPathId);
+				MoveDocumentToNextStep(args.Context.CurrentWorkflowID, Configuration.FailPathId);
 			}
 
 		}
 
-		private void MoveDocumentToNextStep(WebCon.WorkFlow.SDK.Documents.Model.ExistingDocumentData existingDocumentData, int pathId)
+		private void MoveDocumentToNextStep(int workflowId, int pathId)
+		{
+			var document = WebCon.WorkFlow.SDK.Documents.DocumentsManager.GetDocumentByID(workflowId, true);
+			WebCon.WorkFlow.SDK.Documents.DocumentsManager.MoveDocumentToNextStep(
+				new WebCon.WorkFlow.SDK.Documents.Model.MoveDocumentToNextStepParams(document, pathId));
+		}
+
+		private void MoveDocumentToNextStep2(WebCon.WorkFlow.SDK.Documents.Model.ExistingDocumentData existingDocumentData, int pathId)
 		{
 			WebCon.WorkFlow.SDK.Documents.DocumentsManager.MoveDocumentToNextStep(
 				new WebCon.WorkFlow.SDK.Documents.Model.MoveDocumentToNextStepParams(existingDocumentData, pathId));
