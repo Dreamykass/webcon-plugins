@@ -14,21 +14,27 @@ namespace TimeoutProcessStart
 			log("TimeoutProcessStartAction hello");
 
 
-			var docTypeId = 1; // 0 errors out as invalid document type
-			var workFlowId = args.Context.CurrentWorkflowID;
-			var newDocData = WebCon.WorkFlow.SDK.Documents.DocumentsManager.GetNewDocument(
-				new WebCon.WorkFlow.SDK.Documents.Model.GetNewDocumentParams(docTypeId, workFlowId)
-			);
-			var path = 0;
+			var docTypeId = Configuration.DocTypeID;
+			var workFlowId = Configuration.useCurrentWorkflowID ? args.Context.CurrentWorkflowID : Configuration.WorkFlowID;
+			var newDocParams = new WebCon.WorkFlow.SDK.Documents.Model.GetNewDocumentParams(docTypeId, workFlowId);
+			newDocParams.CompanyID = Configuration.CompanyID;
 
+			var newDocData = WebCon.WorkFlow.SDK.Documents.DocumentsManager.GetNewDocument(newDocParams);
 			log("created a new doc");
 
-			WebCon.WorkFlow.SDK.Documents.DocumentsManager.StartNewWorkFlow(
-				new WebCon.WorkFlow.SDK.Documents.Model.StartNewWorkFlowParams(
-					newDocData, path
-				)
-			);
+			var path = Configuration.PathID;
 
+			//newDocData.Attachments.AddNew("New", System.Text.Encoding.ASCII.GetBytes("ok"));
+
+
+			var newWorkflowParams = new WebCon.WorkFlow.SDK.Documents.Model.StartNewWorkFlowParams(newDocData, path);
+
+			var userSearchParams = WebCon.WorkFlow.SDK.Tools.Users.Model.UserSearchParameters.FromDisplayName(Configuration.UserSearchDisplayName);
+			var bpsAccount = WebCon.WorkFlow.SDK.Tools.Users.UserDataProvider.Validate(userSearchParams);
+			var userInfo = new WebCon.WorkFlow.SDK.Common.Model.UserInfo(bpsAccount.BpsID, bpsAccount.DisplayName);
+			newWorkflowParams.AssignedPersons.Add(userInfo);
+
+			WebCon.WorkFlow.SDK.Documents.DocumentsManager.StartNewWorkFlow(newWorkflowParams);
 			log("started the workflow");
 		}
 	}
